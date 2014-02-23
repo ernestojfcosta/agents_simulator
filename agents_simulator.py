@@ -37,13 +37,28 @@ class Agent(Entity):
         self.sensors = sensors
         self.rule_set = rule_set
         self.type_e = 1  
-        
-    def get_perceptions(self,world):
+    
+    def go(self, world):
+        """ Implements the cycle perceptions - actions."""
+        stop = False
+        while not stop:
+            perceptions = get_perceptions(world)
+            action = find_action(perceptions)
+            if not raction:
+                stop = True
+            else:
+                do_action(action,world)
+            
+    def find_action(self,perceptions):
         pass
             
-    def do_action(self,world):
+    def get_perceptions(self,world):
+        x = self.pos_x
+        y = self.pos_y
+        return [world.get_world()[y+sensor[1]][x+sensor[0]].get_type() for sensor in  [(0,-1), (1,0), (0,1),(-1,0)]]
+            
+    def do_action(self,action,world):
         pass
-
    
     def display_agent(self,canvas):
         pos_x = self.get_pos_x() * canvas.get_cell_size()
@@ -84,12 +99,16 @@ class Base(Entity):
 
 class World:
     
-    def __init__(self, width,heigth, type_w='closed',value=0,):
+    def __init__(self, width,heigth, entities= None, type_w='closed',value=0,):
         self.width = width
         self.heigth = heigth
+        self.entities = entities
         self.type_w = type_w
         self.value =  value
         self.create_world()
+        
+        if entities:
+            self.add_entities(entities)
         
     def create_world(self):
         self.world = [[Base(j,i) for j in  range(self.width) ]for i in range(self.heigth)]
@@ -134,7 +153,11 @@ class World:
         """For now just stores thetype."""
         self.world[entity.get_pos_y()][entity.get_pos_x()] = entity
     
-    
+    def add_entities(self,entities):
+        for entity in entities:
+            self.add_entity(entity)
+        
+        
     def display_world(self, canvas):
         for col in range(self.width):
             for line in range(self.heigth):
@@ -191,28 +214,43 @@ def setup():
     WORLD_WIDTH = 40
     WORLD_HEIGTH = 20
     
-    world = World(WORLD_WIDTH,WORLD_HEIGTH)
+    
+    entities = []
+    for i in range(5,15):
+        entities.append(Obstacle(i,i))
+        
+    agent_1 = Agent(8,12)
+    agent_2 = Agent(9,12)
+    
+    obst_1= Obstacle(8,11)
+        
+    world = World(WORLD_WIDTH,WORLD_HEIGTH, entities)
+    
+    world.add_entities([agent_1,agent_2,obst_1])
+    
     canvas = Canvas(world.get_width()*CELLSIZE, world.get_heigth()*CELLSIZE)
     
+    print(agent_1.get_perceptions(world))
+    
+    world.display_world(canvas)
+    
+    
+    """
     obst_1 = Obstacle(random.randint(1,world.get_width()-2),random.randint(1,world.get_heigth()-2))  
     obst_2 = Obstacle(random.randint(1,world.get_width()-2),random.randint(1,world.get_heigth()-2))
     obst_3 = Obstacle(random.randint(1,world.get_width()-2),random.randint(1,world.get_heigth()-2))
-    
     agent_1 = Agent(random.randint(1,world.get_width()-2),random.randint(1,world.get_heigth()-2))
-    
     world.add_entity(obst_1)
     world.add_entity(obst_2)
     world.add_entity(obst_3)
     world.add_entity(agent_1)
-    
-    """
     obst_4 = Obstacle(WORLD_WIDTH//2, WORLD_HEIGTH//2)
     agent_2 = Agent(WORLD_WIDTH//2, WORLD_HEIGTH//2)
     world.add_entity(obst_4)
     world.add_entity(agent_2) 
     """
     
-    world.display_world(canvas)
+  
     
     #print(world.get_world())
     """
